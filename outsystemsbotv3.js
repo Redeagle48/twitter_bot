@@ -18,13 +18,32 @@ function datestring() {
         query_consultor = "outsystems consultor";
 
 setInterval(function () {
-
+    	
+    // Generate random number
+    var rand = Math.random();    
+    
     executeTweet(query_consultor);
-    //executeTweet(query_programmer);
-    //executeTweet(query_consultant);
-    //executeTweet(query_consultor);
+    
+    /* 
+    switch(true) {
+        case rand <= .25:
+            //console.log(".25"); break;
+            executeTweet(query_developer); break;
+        case rand <= .50:
+            //console.log(".5"); break;
+            executeTweet(query_programmer); break;
+        case rand <= .75:
+            //console.log(".75"); break;
+            executeTweet(query_consultant); break;
+        case rand <= 1:
+            //console.log("1"); break;
+            executeTweet(query_consultor); break;
+        default:
+            console.log("Random value outside boundaries (rand = " + rand + ")."); break;
+    }
+    */
 
-}, 7000/*miliseconds*/);
+}, 10000/*miliseconds*/);
 
 function executeTweet(query) {
     var params = {
@@ -33,8 +52,6 @@ function executeTweet(query) {
             result_type: "mixed"
         };
 
-        //console.log(params);
-        
         bot.retweet(params, function(err, reply) {
             if(err) return handleError(err);
 

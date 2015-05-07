@@ -1,6 +1,9 @@
 var later = require('later'),
     md5 = require('blueimp-md5'),
-    storage = require('node-persist');
+    storage = require('node-persist'),
+    autolinker = require('autolinker'),
+    request = require("request"),
+    cheerio = require("cheerio");
 
 var Twit = require('twit/lib/twitter');
 
@@ -8,7 +11,7 @@ var Bot = module.exports = function (config) {
     this.twit = new Twit(config);
   };
 
-var sched = later.parse.recur().every(2).second();
+var sched = later.parse.recur().every(5).second();
 
 // Array with the tweets to process
 var tweets_buffer = [];
@@ -21,21 +24,43 @@ storage.initSync();
 //
 Bot.prototype.retweet = function (params, callback) {
     var self = this;
+    
+    console.log("\n--------------------------------START-----------------------------");
 
     self.twit.get('search/tweets', params, function (err, reply) {
+
+        // Get the hour when the operation is happening
+        var current_hour = getDateTime();
+        console.log("=> Actual date time: " + current_hour);
+        console.log("======================================");
 
         console.log("Search tweet with query: \"" + params.q + "\".");
         console.log("======================================");
 
+        // When there is an error with the request
+        if (err) return callback(err);
+        
+        // When there is no tweet returned in the search
+        if (typeof reply === 'undefined' || reply.statuses.length === 0) {
+            return console.log("=> There is no tweet returned in the search.\n======================================");
+        }
+        
+        // Number of tweets in the buffer to be posted
+        console.log("Before adding new tweets Buffer has length: " + tweets_buffer.length);
+        
         // Dump returned tweets
         var tweets = reply.statuses;
-        
+        console.log("=> Returned tweets from search: " + JSON.stringify(tweets.length));
+        console.log("======================================");
+                
+        // Add tweets fetched into the buffer to be posted
         tweets.forEach(function(element) {
             tweets_buffer.push(element);
         }, this);
-        
-        console.log("Tweets Buffer has length: " + tweets_buffer.length);
      
+        // Number of tweets in the buffer to be posted
+        console.log("After adding new tweets Buffer has length: " + tweets_buffer.length);
+   
         // Execute 'processTweet' function after 'sched' time    
         if(tweets_buffer.length >= 1) {
             processTweet();
@@ -45,6 +70,8 @@ Bot.prototype.retweet = function (params, callback) {
 };
 
 function processTweet(){
+    
+    console.log("Process Tweet");
     
     // Extract the first tweet from the array
     var tweet = tweets_buffer.shift();
@@ -58,11 +85,125 @@ function processTweet(){
     console.log("Processing tweet: " + tweet_text);
     console.log("Hash Tweet: " + tweet_text_md5);
     
-    storage.setItem(tweet_text_md5, tweet_text);
-    console.log(storage.getItem(tweet_text_md5));
+    if(storage.getItem(tweet_text_md5) === undefined) {
+        // To post tweet
+        console.log("To Post");
+        
+        ////
+        // Only accepts a tweet in english or portuguese
+        if (tweet.metadata.iso_language_code === "en" ||
+            tweet.metadata.iso_language_code === "pt" ||
+            tweet.metadata.iso_language_code === "und") {
+
+            console.log("=> Tweet to be processed since language is \"en\" or \"pt\"");
+            console.log("======================================");
+
+            console.log("Tweet Text: " + tweet_text);
+
+            // get url
+            var url = autolinker.link( tweet_text )
+                                    .split("<a href=\"")[1]
+                                    .split("\"")[0];
+            
+            // Compose the Tweet and post it
+            postTweet(tweet_text, url);
+        
+            // Save tweet in the persistent storage in pair {tweet.text md5 -> tweet.text}
+            storage.setItem(tweet_text_md5, tweet_text);
+
+        } else {
+            console.log("=> Rejected Tweet since language isn't \"en\" or \"pt\"");
+            //console.log("==================END====================");
+        }
+       
+    } else {
+        // Tweet already posted, to ignore
+        console.log("Repeated Post");
+    }
                 
     // Until there are tweets to post
     if(tweets_buffer.length > 0){
         later.setTimeout(processTweet, sched);
     }
 };
+
+function postTweet(tweet_text, url) {
+    
+    var text_to_post = tweet_text;
+    
+    if(url != ""){
+        console.log("URL detected");
+        console.log("======================================");
+        request(url, function (error, response, body) {
+
+            if (error) {
+                console.log("Couldn’ t get page because of error: " + error);
+                return;
+            }
+            
+            var $ = cheerio.load(body);
+            
+            // Is ITJobs
+            if($('meta[name=application-name]').attr('content') === "ITJobs") {
+                console.log("Tweet from IT Jobs");
+            }
+            // Is Expresso Emprego?
+            else if($('meta[name=Author]').attr('content') === "Expresso Emprego") {
+                console.log("Tweet from Expresso Jobs");
+                
+            }
+            // Is Sapo Emprego?
+            else if($('meta[name=author]').attr('content') === "Sapoemprego") {
+                console.log("Tweet from Sapo Emprego");
+                
+            }
+            // Any other source
+            else {
+                
+            }
+        
+        });
+    } 
+    // No url in the tweet text
+    else {
+        console.log("URL not detected");
+        console.log("======================================");
+    }
+    
+    // Post
+    //self.twit.post('statuses/update', {
+    //    status: text_to_post
+    //}, tweetcallback);
+};
+
+//
+// Get todays date
+//
+function getDateTime() {
+
+    var date = new Date();
+    var monthNames = ["Initial", "Jan", "Feb", "Mar", "April", "May", "June",
+                      "July", "Aug", "Sept", "Oct", "Nov", "Dec"
+                     ];
+
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+
+    var sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+
+    var year = date.getFullYear();
+
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+
+    //return year + "/" + monthNames[parseInt(month)] + "/" + day + " at " + hour + ":" + min + ":" + sec;
+    return hour + ":" + min + ":" + sec + " on " + year + "/" + monthNames[parseInt(month)] + "/" + day;
+
+}
