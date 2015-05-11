@@ -11,7 +11,7 @@ var Bot = module.exports = function (config) {
     this.twit = new Twit(config);
   };
 
-var sched = later.parse.recur().every(5).second();
+var sched = later.parse.recur().every(20).second();
 
 // Array with the tweets to process
 var tweets_buffer = [];
@@ -75,6 +75,8 @@ function processTweet(){
     
     // Extract the first tweet from the array
     var tweet = tweets_buffer.shift();
+    
+    console.log("Dump tweet to be processed now: " + tweet.text);
     
     // Get the tweet text
     var tweet_text = tweet.text;
@@ -143,25 +145,66 @@ function postTweet(tweet_text, url) {
             
             var $ = cheerio.load(body);
             
+            // to be used when processing tweets to compose the tweet to post
+            var company, job, location = "";
+            
             // Is ITJobs
             if($('meta[name=application-name]').attr('content') === "ITJobs") {
                 console.log("Tweet from IT Jobs");
+                
+                company = $('div[class="company"] a').attr('title');
+                job = $('div[class="section"] h1').text();
+                job = job.split("(")[0].split(")")[0];
+                
+                //console.log("Job: " + job + "; Company: " + company);
+               
             }
             // Is Expresso Emprego?
             else if($('meta[name=Author]').attr('content') === "Expresso Emprego") {
                 console.log("Tweet from Expresso Jobs");
+                
+                company = $('h2[class="xslTitulo"]').text().split("Empresa:")[1].trim();
+                
+                job = $('h1[class="back h xslTitulo"]');
+                job = job.text().split("\t")[0].split("(m")[0];
+
+                location = $('h1[class="back h xslTitulo"]').children().text();
+                
+                //console.log("Job: " + job + "; Company: " + company + "; Location: " + location);
                 
             }
             // Is Sapo Emprego?
             else if($('meta[name=author]').attr('content') === "Sapoemprego") {
                 console.log("Tweet from Sapo Emprego");
                 
-            }
-            // Any other source
-            else {
+                company = $('div[class=resumo] div[class=offerbox] dl dd a').closest().text();
+                
+                job = $('div[id=boxAnuncio] h2[style="float: left;"]').text();
+                
+                //location = $('div[class=resumo] div[class=offerbox] dl dd a')[2].text() + " - "
+                //    + $('div[class=resumo] div[class=offerbox] dl dd a')[1].text();
+                
                 
             }
-        
+            // Any other source
+            else {}
+            
+            // When the tweet was processed, compose the tweet to post
+            if(company != "") {
+                // TODO:
+                // 1) What to do when bigger than 140 charecters
+                text_to_post = job.trim() + 
+                                        ((company != "") ? " (" + company + ")" : "") +
+                                        " -" +
+                                        ((location.trim() != "") ? location.trim() : "") +
+                                        " " + url;
+            }
+            
+            // Add hashtag to the tweet to post
+            text_to_post += " #outsystems";
+            
+            // Post tweet
+            console.log("Tweet to post: " + text_to_post);
         });
     } 
     // No url in the tweet text
