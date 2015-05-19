@@ -8,7 +8,7 @@ function datestring() {
     var d = new Date(Date.now() - 5 * 60 * 60 * 1000); //est timezone
     return d.getUTCFullYear() + "-" +
         (d.getUTCMonth() + 1) + "-" +
-        (d.getDate() - 2); // Looking for tweets in the last 5 days
+        (d.getDate() - 2); // Looking for tweets in the last 2 days
 };
 
 // queries
@@ -16,9 +16,14 @@ function datestring() {
         query_programmer = "outsystems programmer",
         query_consultant = "outsystems consultant",
         query_consultor = "outsystems consultor";
+        
+        
+console.log("Twitter bot running.....");
 
 setInterval(function () {
     	
+    console.log("\n================= START =================");    
+        
     // Generate random number
     var rand = Math.random();    
     
@@ -43,7 +48,7 @@ setInterval(function () {
     }
     
 
-}, 240000/*miliseconds*/);
+}, 120000/*miliseconds*/);
 
 function executeTweet(query) {
     var params = {
