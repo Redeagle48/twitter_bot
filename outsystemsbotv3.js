@@ -53,7 +53,7 @@ setInterval(function() {
   }
 
 
-}, 300000/*120000 /*miliseconds*/ );
+}, 1800000/*120000 /*miliseconds*/ );
 
 function executeTweet(query) {
   var params = {

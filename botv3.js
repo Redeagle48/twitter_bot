@@ -19,11 +19,13 @@ var tweets_buffer = [];
 //you must first call storage.init or storage.initSync
 storage.initSync();
 
+var self;
+
 //
 // retweet
 //
 Bot.prototype.retweet = function (params, callback) {
-    var self = this;
+    self = this;
 
     self.twit.get('search/tweets', params, function (err, reply) {
 
@@ -227,7 +229,7 @@ function postTweet(tweet_text, url) {
                 // THIS FOLLOWING CODE WAS NOT BEING PROCESSED RIGHT WHEN IN THE END OF THE IF
 
                 // Add hashtag to the tweet to post
-                text_to_post += " @OutSystems";
+                text_to_post += " @OutSystems #ITJobs";
                 // Post tweet
                 //console.log("Tweet to post: " + text_to_post);
                 TweetPost(text_to_post);
@@ -256,6 +258,10 @@ function TweetPost(text_to_post){
     self.twit.post('statuses/update', {
         status: text_to_post
     }, tweetcallback);
+}
+
+function tweetcallback() {
+  console.log("POSTADO!!!");
 }
 
 //
