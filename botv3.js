@@ -43,7 +43,10 @@ Bot.prototype.retweet = function (params, callback) {
         // When there is no tweet returned in the search
         if (typeof reply === 'undefined' || reply.statuses.length === 0) {
             console.log("=> There **is no** tweet returned in the search.");
-            return console.log("================= END =================\n");
+            var consoleLog = "\n=================================================" +
+                             "====================== END ======================" +
+                             "=================================================\n";
+            return consoleLog;
         }
 
         // Number of tweets in the buffer to be posted
@@ -171,6 +174,10 @@ function postTweet(tweet_text, url) {
                 //console.log("Tweet to post: " + text_to_post);
                 TweetPost(text_to_post);
 
+                // Save the hash of the tweet done to avoid repetition
+                var tweet_text_md5 = md5.md5(text_to_post);
+                storage.setItem(tweet_text_md5, text_to_post);
+
             }
             // Is Expresso Emprego?
             else if($('meta[name=Author]').attr('content') === "Expresso Emprego") {
@@ -194,6 +201,11 @@ function postTweet(tweet_text, url) {
                 // Post tweet
                 //console.log("Tweet to post: " + text_to_post);
                 TweetPost(text_to_post);
+
+                // Save the hash of the tweet done to avoid repetition
+                var tweet_text_md5 = md5.md5(text_to_post);
+                storage.setItem(tweet_text_md5, text_to_post);
+
             }
             // Is Sapo Emprego?
             else if($('meta[name=author]').attr('content') === "Sapoemprego") {
@@ -233,6 +245,11 @@ function postTweet(tweet_text, url) {
                 // Post tweet
                 //console.log("Tweet to post: " + text_to_post);
                 TweetPost(text_to_post);
+
+                // Save the hash of the tweet done to avoid repetition
+                var tweet_text_md5 = md5.md5(text_to_post);
+                storage.setItem(tweet_text_md5, text_to_post);
+
             }
         });
     }

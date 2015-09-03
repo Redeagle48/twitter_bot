@@ -22,7 +22,9 @@ console.log("Twitter bot running.....");
 
 setInterval(function() {
 
-  console.log("\n================= START =================");
+  console.log("\n=================================================");
+  console.log("====================== START ======================");
+  console.log("=================================================");
 
   // Generate random number
   var rand = Math.random();
