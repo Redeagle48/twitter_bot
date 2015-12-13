@@ -1,15 +1,8 @@
 var Bot = require('./botv3');
 var config1 = require('./config1');
+var utils = require('./src/utils');
 
 var bot = new Bot(config1);
-
-//get date string for today's date (e.g. 2011-01-01)
-function datestring() {
-    var d = new Date(Date.now() - 5 * 60 * 60 * 1000); //est timezone
-    return d.getUTCFullYear() + '-' +
-        (d.getUTCMonth() + 1) + '-' +
-        (d.getDate() - 2); // Looking for tweets in the last 2 days
-};
 
 // queries
 var queryDeveloper = 'outsystems developer';
@@ -27,8 +20,6 @@ setInterval(function () {
 
     // Generate random number
     var rand = Math.random();
-
-    //executeTweet(query_consultor);
 
     switch (true) {
         case rand <= 0.25:
@@ -48,12 +39,12 @@ setInterval(function () {
             break;
     }
 
-}, 1800000 /*miliseconds*/);
+}, utils.minutesToMiliseconds(30));
 
 function executeTweet(query) {
     var params = {
         q: query,
-        since: datestring(),
+        since: utils.dateString(),
         result_type: 'mixed'
     };
 
