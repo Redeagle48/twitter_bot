@@ -1,6 +1,5 @@
 var later = require('later');
-var md5 = require('blueimp-md5');
-var storage = require('node-persist');
+var storage = require('./src/persistentData');
 var autolinker = require('autolinker');
 var request = require('request');
 var utils = require('./src/utils');
@@ -15,7 +14,7 @@ var Bot = module.exports = function (config) {
 var tweetsBuffer = [];
 
 //you must first call storage.init or storage.initSync
-storage.initSync();
+storage.init("db_fileName.json");
 
 var self;
 
@@ -86,8 +85,6 @@ function processTweet() {
     // Extract the first originalTweet from the array
     var originalTweet = tweetsBuffer.shift();
 
-    //console.log('Tweet object -> ' + JSON.stringify(originalTweet));
-
     var myTweetObject = {
         id: processTweetID++,
         text: originalTweet.text,
@@ -100,13 +97,10 @@ function processTweet() {
     console.log(printID(myTweetObject) + 'Text -> ' + myTweetObject.text);
     console.log(printID(myTweetObject) + 'User -> ' + myTweetObject.user);
 
-    // Generate md5 from the originalTweet text
-    var tweetTextMd5 = md5.md5(myTweetObject.text);
-
-    if (storage.getItem(tweetTextMd5) === undefined) {
+    if (!storage.wasAlreadyProcessed(myTweetObject.text)) {
 
         // Save originalTweet in the persistent storage {originalTweet.text md5 -> originalTweet.text}
-        //storage.setItem(tweetTextMd5, myTweetObject.text);
+        storage.addTweet(myTweetObject.text);
 
         // To post originalTweet
         console.log(printID(myTweetObject) + '[ GOOD ] Tweet not processed before');
@@ -167,7 +161,18 @@ function postTweet(myTweetObject, url) {
             }
 
             myTweetObject.textToPost = "RT @" + myTweetObject.user + ' \"' + myTweetObject.text + '\"';
-            myTweetObject.textToPost += " @OutSystems";
+            var arrHash = ["OutSystems","OutSystemsDev"];
+
+            for (var i = 0; i < myTweetObject.hashtags.length; i++) {
+                var elemIndex = arrHash.indexOf(myTweetObject.hashtags[i].screen_name);
+                if(elemIndex >=0 ) {
+                    arrHash.splice(elemIndex, 1);
+                }
+            }
+
+            for (var j = 0; j < arrHash.length; j++) {
+                myTweetObject.textToPost += " @" + arrHash[j];
+            }
 
             TweetPost(myTweetObject);
 

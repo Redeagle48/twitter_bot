@@ -1,23 +1,42 @@
-/* File not used */
-
-var md5 = require('blueimp-md5');
 var storage = require('node-persist');
+var md5 = require('blueimp-md5');
 
 module.exports =
     (function () {
 
-        //you must first call storage.init or storage.initSync
-        storage.initSync();
+        var dbFileName;
+
+        var _getDB = function() {
+            return storage.getItem(dbFileName);
+        };
 
         return {
 
-            'testAccess': function() {
-                return "I can read this!";
+            'init': function (dbFileNameInput) {
+                storage.initSync();
+                dbFileName = dbFileNameInput;
+                storage.setItem(dbFileName, {});
             },
 
-            'add': function (data) {
-                var tweetTextMd5 = md5.md5(data);
-                storage.setItem(tweetTextMd5, "test");
+            'addTweet': function (tweetText) {
+                var tweetTextMd5 = md5.md5(tweetText);
+
+                var db = _getDB();
+                db[tweetTextMd5] = tweetText;
+
+                storage.setItem(dbFileName, db);
+            },
+
+            'wasAlreadyProcessed': function(tweetText) {
+                var db = _getDB();
+                var tweetTextMd5 = md5.md5(tweetText);
+
+                var toReturn = false;
+                if (tweetTextMd5 in db) {
+                    toReturn = true;
+                }
+
+                return toReturn;
             }
         }
     })();
