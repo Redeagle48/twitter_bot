@@ -39,7 +39,7 @@ setInterval(function () {
             break;
     }
 
-}, utils.minutesToMiliseconds(5));
+}, utils.minutesToMiliseconds(1));
 
 function executeTweet(query) {
     var params = {

@@ -4,18 +4,18 @@ var md5 = require('blueimp-md5');
 module.exports =
     (function () {
 
-        var dbFileName;
+        var _dbFileName;
 
         var _getDB = function() {
-            return storage.getItem(dbFileName);
+            return storage.getItem(_dbFileName);
         };
 
         return {
 
             'init': function (dbFileNameInput) {
                 storage.initSync();
-                dbFileName = dbFileNameInput;
-                storage.setItem(dbFileName, {});
+                _dbFileName = dbFileNameInput;
+                storage.setItem(_dbFileName, {});
             },
 
             'addTweet': function (tweetText) {
@@ -24,7 +24,7 @@ module.exports =
                 var db = _getDB();
                 db[tweetTextMd5] = tweetText;
 
-                storage.setItem(dbFileName, db);
+                storage.setItem(_dbFileName, db);
             },
 
             'wasAlreadyProcessed': function(tweetText) {

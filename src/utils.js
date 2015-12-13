@@ -5,7 +5,7 @@ module.exports = {
         var d = new Date(Date.now() - 5 * 60 * 60 * 1000); //est timezone
         return d.getUTCFullYear() + '-' +
             (d.getUTCMonth() + 1) + '-' +
-            (d.getDate() - 3); // Looking for tweets in the last 2 days
+            (d.getDate() - 2); // Looking for tweets in the last 2 days
     },
 
     minutesToMiliseconds: function(minutes) {

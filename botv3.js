@@ -192,9 +192,9 @@ function postTweet(myTweetObject, url) {
 function TweetPost(myTweetObject) {
     console.log(printID(myTweetObject) + 'Tweet to Post: ' + myTweetObject.textToPost);
     // Post
-    //self.twit.post('statuses/update', {
-    //    status: textToPost
-    //}, tweetcallback);
+    self.twit.post('statuses/update', {
+        status: myTweetObject.textToPost
+    }, tweetcallback);
 }
 
 function tweetcallback() {
