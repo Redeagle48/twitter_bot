@@ -1,8 +1,8 @@
 var later = require('later');
-var storage = require('./src/persistentData');
+var storage = require('./persistentData');
 var autolinker = require('autolinker');
 var request = require('request');
-var utils = require('./src/utils');
+var utils = require('./utils');
 
 var Twit = require('twit/lib/twitter');
 
@@ -192,9 +192,9 @@ function postTweet(myTweetObject, url) {
 function TweetPost(myTweetObject) {
     console.log(printID(myTweetObject) + 'Tweet to Post: ' + myTweetObject.textToPost);
     // Post
-    self.twit.post('statuses/update', {
-        status: myTweetObject.textToPost
-    }, tweetcallback);
+    //self.twit.post('statuses/update', {
+    //    status: myTweetObject.textToPost
+    //}, tweetcallback);
 }
 
 function tweetcallback() {

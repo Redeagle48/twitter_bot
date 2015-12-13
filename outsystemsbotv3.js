@@ -1,4 +1,4 @@
-var Bot = require('./botv3');
+var Bot = require('./src/botv3');
 var config1 = require('./config1');
 var utils = require('./src/utils');
 
@@ -39,7 +39,7 @@ setInterval(function () {
             break;
     }
 
-}, utils.minutesToMiliseconds(1));
+}, utils.minutesToMiliseconds(30));
 
 function executeTweet(query) {
     var params = {
