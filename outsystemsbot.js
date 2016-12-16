@@ -1,4 +1,4 @@
-var Bot = require('./src/botv3');
+var Bot = require('./src/bot');
 var config1 = require('./config1');
 var utils = require('./src/utils');
 
